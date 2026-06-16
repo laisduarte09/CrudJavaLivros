@@ -1,7 +1,5 @@
 package com.template;
 
-import com.template.LivrosDAO;
-import com.template.LivrosDTO;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -34,65 +32,102 @@ public class MainController {
 
     @FXML
     private void btnSalvarAction(ActionEvent event) {
-        String titulo = txtTitulo.getText();
-        String autor = txtAutor.getText();
-        String genero = txtGenero.getText();
-        int ano = Integer.parseInt(txtAno.getText());
+        if (!validarCampos()) {
+            return;
+        }
 
-        LivrosDTO objlivrodto = new LivrosDTO();
-        objlivrodto.setTitulo(titulo);
-        objlivrodto.setAutor(autor);
-        objlivrodto.setGenero(genero);
-        objlivrodto.setAnoPublicacao(ano);
+        LivrosDTO livro = new LivrosDTO();
+        livro.setTitulo(txtTitulo.getText().trim());
+        livro.setAutor(txtAutor.getText().trim());
+        livro.setGenero(txtGenero.getText().trim());
+        livro.setAnoPublicacao(Integer.parseInt(txtAno.getText().trim()));
 
-        LivrosDAO objlivrosdao = new LivrosDAO();
-        objlivrosdao.cadastrarLivros(objlivrodto);
+        LivrosDAO livrosDAO = new LivrosDAO();
+        livrosDAO.cadastrarLivros(livro);
 
         carregarLivros();
+        limparCampos();
     }
 
     @FXML
     private void btnAlterarAction(ActionEvent event) {
         LivrosDTO livroSelecionado = tblLivros.getSelectionModel().getSelectedItem();
 
-        if (livroSelecionado != null) {
-            livroSelecionado.setTitulo(txtTitulo.getText());
-            livroSelecionado.setAutor(txtAutor.getText());
-            livroSelecionado.setGenero(txtGenero.getText());
-            livroSelecionado.setAnoPublicacao(Integer.parseInt(txtAno.getText()));
-
-            LivrosDAO objlivrosdao = new LivrosDAO();
-            objlivrosdao.atualizarLivros(livroSelecionado);
-
-            carregarLivros();
+        if (livroSelecionado == null || !validarCampos()) {
+            return;
         }
+
+        livroSelecionado.setTitulo(txtTitulo.getText().trim());
+        livroSelecionado.setAutor(txtAutor.getText().trim());
+        livroSelecionado.setGenero(txtGenero.getText().trim());
+        livroSelecionado.setAnoPublicacao(Integer.parseInt(txtAno.getText().trim()));
+
+        LivrosDAO livrosDAO = new LivrosDAO();
+        livrosDAO.atualizarLivros(livroSelecionado);
+
+        carregarLivros();
+        limparCampos();
     }
 
     @FXML
     private void btnExcluirAction(ActionEvent event) {
         LivrosDTO livroSelecionado = tblLivros.getSelectionModel().getSelectedItem();
 
-        if (livroSelecionado != null) {
-            LivrosDAO objlivrosdao = new LivrosDAO();
-            objlivrosdao.deletarLivros(livroSelecionado.getId());
-
-            carregarLivros();
+        if (livroSelecionado == null) {
+            return;
         }
-    }
 
-    private void carregarLivros() {
-        LivrosDAO objlivrosdao = new LivrosDAO();
-        ArrayList<LivrosDTO> listaLivros = objlivrosdao.selecionarLivros();
-        tblLivros.setItems(FXCollections.observableArrayList(listaLivros));
+        LivrosDAO livrosDAO = new LivrosDAO();
+        livrosDAO.deletarLivros(livroSelecionado.getId());
+
+        carregarLivros();
+        limparCampos();
     }
 
     @FXML
     private void btnLimparAction(ActionEvent event) {
+        limparCampos();
+    }
+
+    private void carregarLivros() {
+        LivrosDAO livrosDAO = new LivrosDAO();
+        ArrayList<LivrosDTO> listaLivros = livrosDAO.selecionarLivros();
+        tblLivros.setItems(FXCollections.observableArrayList(listaLivros));
+    }
+
+    private void limparCampos() {
         txtId.clear();
         txtTitulo.clear();
         txtAutor.clear();
         txtGenero.clear();
         txtAno.clear();
+        tblLivros.getSelectionModel().clearSelection();
+    }
+
+    private boolean validarCampos() {
+        if (txtTitulo.getText().trim().isEmpty()) {
+            return false;
+        }
+
+        if (txtAutor.getText().trim().isEmpty()) {
+            return false;
+        }
+
+        if (txtGenero.getText().trim().isEmpty()) {
+            return false;
+        }
+
+        if (txtAno.getText().trim().isEmpty()) {
+            return false;
+        }
+
+        try {
+            Integer.parseInt(txtAno.getText().trim());
+        } catch (NumberFormatException e) {
+            return false;
+        }
+
+        return true;
     }
 
     @FXML
@@ -102,9 +137,19 @@ public class MainController {
         colAutor.setCellValueFactory(new PropertyValueFactory<>("autor"));
         colGenero.setCellValueFactory(new PropertyValueFactory<>("genero"));
         colAno.setCellValueFactory(new PropertyValueFactory<>("anoPublicacao"));
-        tblLivros.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> carregarCampos()
-        );
+
+        txtId.setEditable(false);
+
+        btnAlterar.setDisable(true);
+        btnExcluir.setDisable(true);
+
+        tblLivros.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            carregarCampos();
+
+            boolean selecionado = newValue != null;
+            btnAlterar.setDisable(!selecionado);
+            btnExcluir.setDisable(!selecionado);
+        });
 
         carregarLivros();
     }
