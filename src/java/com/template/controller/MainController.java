@@ -1,5 +1,7 @@
-package com.template;
+package com.template.controller;
 
+import com.template.model.LivrosDAO;
+import com.template.model.LivrosDTO;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -10,6 +12,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.util.ArrayList;
+
+import static com.template.util.DialogUtil.*;
 
 public class MainController {
 
@@ -47,6 +51,8 @@ public class MainController {
 
         carregarLivros();
         limparCampos();
+
+        showInfo("Salvo com sucesso");
     }
 
     @FXML
