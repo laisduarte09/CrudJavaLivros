@@ -1,31 +1,27 @@
 package com.template.service;
 
-import com.template.model.LivrosDAO;
-import com.template.model.LivrosDTO;
+import com.template.model.dao.LivroDAO;
+import com.template.model.dto.LivroDTO;
 
 import java.util.List;
 
 public class LivrosService {
 
-    private final LivrosDAO livrosDAO;
+    private final LivroDAO livrosDAO;
 
-    public LivrosService(LivrosDAO livrosDAO) {
+    public LivrosService(LivroDAO livrosDAO) {
         this.livrosDAO = livrosDAO;
     }
 
-    public List<LivrosDTO> listarTodos(){
-        return livrosDAO.selecionarLivros();
+    public List<LivroDTO> listarTodos() {
+        return livrosDAO.listarLivros();
     }
 
-    public void cadastrar(LivrosDTO livro){
-        livrosDAO.cadastrarLivros(livro);
+    public void cadastrar(LivroDTO livro) {
+        livrosDAO.cadastrarLivro(livro);
     }
 
-    public void atualizar(LivrosDTO livro){
-        livrosDAO.atualizarLivros(livro);
-    }
-
-    public void deletar(int id){
-        livrosDAO.deletarLivros(id);
+    public void deletar(int id) {
+        livrosDAO.deletarLivro(id);
     }
 }

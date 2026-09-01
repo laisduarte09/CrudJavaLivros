@@ -1,9 +1,11 @@
 package com.template.controller;
 
-import com.template.model.LivrosDAO;
-import com.template.model.LivrosDTO;
-import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
+import com.template.model.dao.LivroDAO;
+import com.template.model.dto.LivroDTO;
+import com.template.service.LivrosService;
+import com.template.util.DialogUtil;
+import com.template.validator.LivrosValidator;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
@@ -11,165 +13,165 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.util.ArrayList;
-
-import static com.template.util.DialogUtil.*;
-
 public class MainController {
 
-    @FXML private Button btnSalvar;
-    @FXML private Button btnAlterar;
-    @FXML private Button btnExcluir;
-
-    @FXML private TextField txtId;
-    @FXML private TextField txtTitulo;
-    @FXML private TextField txtAutor;
-    @FXML private TextField txtGenero;
-    @FXML private TextField txtAno;
-
-    @FXML private TableView<LivrosDTO> tblLivros;
-    @FXML private TableColumn<LivrosDTO, Integer> colId;
-    @FXML private TableColumn<LivrosDTO, String> colTitulo;
-    @FXML private TableColumn<LivrosDTO, String> colAutor;
-    @FXML private TableColumn<LivrosDTO, String> colGenero;
-    @FXML private TableColumn<LivrosDTO, Integer> colAno;
+    @FXML
+    private TextField txtTitulo;
 
     @FXML
-    private void btnSalvarAction(ActionEvent event) {
-        if (!validarCampos()) {
-            return;
-        }
-
-        LivrosDTO livro = new LivrosDTO();
-        livro.setTitulo(txtTitulo.getText().trim());
-        livro.setAutor(txtAutor.getText().trim());
-        livro.setGenero(txtGenero.getText().trim());
-        livro.setAnoPublicacao(Integer.parseInt(txtAno.getText().trim()));
-
-        LivrosDAO livrosDAO = new LivrosDAO();
-        livrosDAO.cadastrarLivros(livro);
-
-        carregarLivros();
-        limparCampos();
-
-        showInfo("Salvo com sucesso");
-    }
+    private TextField txtAutor;
 
     @FXML
-    private void btnAlterarAction(ActionEvent event) {
-        LivrosDTO livroSelecionado = tblLivros.getSelectionModel().getSelectedItem();
-
-        if (livroSelecionado == null || !validarCampos()) {
-            return;
-        }
-
-        livroSelecionado.setTitulo(txtTitulo.getText().trim());
-        livroSelecionado.setAutor(txtAutor.getText().trim());
-        livroSelecionado.setGenero(txtGenero.getText().trim());
-        livroSelecionado.setAnoPublicacao(Integer.parseInt(txtAno.getText().trim()));
-
-        LivrosDAO livrosDAO = new LivrosDAO();
-        livrosDAO.atualizarLivros(livroSelecionado);
-
-        carregarLivros();
-        limparCampos();
-    }
+    private TextField txtAno;
 
     @FXML
-    private void btnExcluirAction(ActionEvent event) {
-        LivrosDTO livroSelecionado = tblLivros.getSelectionModel().getSelectedItem();
-
-        if (livroSelecionado == null) {
-            return;
-        }
-
-        LivrosDAO livrosDAO = new LivrosDAO();
-        livrosDAO.deletarLivros(livroSelecionado.getId());
-
-        carregarLivros();
-        limparCampos();
-    }
+    private Button btnCadastrar;
 
     @FXML
-    private void btnLimparAction(ActionEvent event) {
-        limparCampos();
-    }
+    private Button btnDeletar;
 
-    private void carregarLivros() {
-        LivrosDAO livrosDAO = new LivrosDAO();
-        ArrayList<LivrosDTO> listaLivros = livrosDAO.selecionarLivros();
-        tblLivros.setItems(FXCollections.observableArrayList(listaLivros));
-    }
+    @FXML
+    private TableView<LivroDTO> tblLivros;
 
-    private void limparCampos() {
-        txtId.clear();
-        txtTitulo.clear();
-        txtAutor.clear();
-        txtGenero.clear();
-        txtAno.clear();
-        tblLivros.getSelectionModel().clearSelection();
-    }
+    @FXML
+    private TableColumn<LivroDTO, Integer> colId;
 
-    private boolean validarCampos() {
-        if (txtTitulo.getText().trim().isEmpty()) {
-            return false;
-        }
+    @FXML
+    private TableColumn<LivroDTO, String> colTitulo;
 
-        if (txtAutor.getText().trim().isEmpty()) {
-            return false;
-        }
+    @FXML
+    private TableColumn<LivroDTO, String> colAutor;
 
-        if (txtGenero.getText().trim().isEmpty()) {
-            return false;
-        }
+    @FXML
+    private TableColumn<LivroDTO, Integer> colAno;
 
-        if (txtAno.getText().trim().isEmpty()) {
-            return false;
-        }
-
-        try {
-            Integer.parseInt(txtAno.getText().trim());
-        } catch (NumberFormatException e) {
-            return false;
-        }
-
-        return true;
-    }
+    private final LivrosService livrosService =
+            new LivrosService(new LivroDAO());
 
     @FXML
     public void initialize() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
-        colAutor.setCellValueFactory(new PropertyValueFactory<>("autor"));
-        colGenero.setCellValueFactory(new PropertyValueFactory<>("genero"));
-        colAno.setCellValueFactory(new PropertyValueFactory<>("anoPublicacao"));
 
-        txtId.setEditable(false);
+        configurarTabela();
+        atualizarTabela();
+    }
 
-        btnAlterar.setDisable(true);
-        btnExcluir.setDisable(true);
+    private void configurarTabela() {
 
-        tblLivros.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            carregarCampos();
+        colId.setCellValueFactory(
+                new PropertyValueFactory<>("id")
+        );
 
-            boolean selecionado = newValue != null;
-            btnAlterar.setDisable(!selecionado);
-            btnExcluir.setDisable(!selecionado);
-        });
+        colTitulo.setCellValueFactory(
+                new PropertyValueFactory<>("titulo")
+        );
 
-        carregarLivros();
+        colAutor.setCellValueFactory(
+                new PropertyValueFactory<>("autor")
+        );
+
+        colAno.setCellValueFactory(
+                new PropertyValueFactory<>("anoPublicacao")
+        );
     }
 
     @FXML
-    private void carregarCampos() {
-        LivrosDTO livroDto = tblLivros.getSelectionModel().getSelectedItem();
+    public void btnCadastrarAction() {
 
-        if (livroDto != null) {
-            txtId.setText(String.valueOf(livroDto.getId()));
-            txtTitulo.setText(livroDto.getTitulo());
-            txtAutor.setText(livroDto.getAutor());
-            txtGenero.setText(livroDto.getGenero());
-            txtAno.setText(String.valueOf(livroDto.getAnoPublicacao()));
+        String titulo = txtTitulo.getText();
+        String autor = txtAutor.getText();
+        String ano = txtAno.getText();
+
+        if (!LivrosValidator.validarLivro(
+                titulo,
+                autor,
+                ano,
+                "genero")) {
+
+            DialogUtil.showError(
+                    "Preencha os campos corretamente!"
+            );
+
+            return;
         }
+
+        LivroDTO livro = criarLivro(
+                titulo,
+                autor,
+                ano
+        );
+
+        livrosService.cadastrar(livro);
+
+        DialogUtil.showInfo(
+                "Livro cadastrado com sucesso!"
+        );
+
+        limparCampos();
+        atualizarTabela();
+    }
+
+    @FXML
+    public void btnDeletarAction() {
+
+        LivroDTO livroSelecionado =
+                tblLivros.getSelectionModel().getSelectedItem();
+
+        if (livroSelecionado == null) {
+
+            DialogUtil.showError(
+                    "Selecione um livro na tabela para deletar."
+            );
+
+            return;
+        }
+
+        boolean confirmado =
+                DialogUtil.showConfirmation(
+                        "Deseja realmente excluir o livro selecionado?"
+                );
+
+        if (!confirmado) {
+            return;
+        }
+
+        livrosService.deletar(
+                livroSelecionado.getId()
+        );
+
+        DialogUtil.showInfo(
+                "Livro deletado com sucesso!"
+        );
+
+        atualizarTabela();
+    }
+
+    private LivroDTO criarLivro(
+            String titulo,
+            String autor,
+            String ano) {
+
+        LivroDTO livro = new LivroDTO();
+
+        livro.setTitulo(titulo);
+        livro.setAutor(autor);
+        livro.setAnoPublicacao(
+                Integer.parseInt(ano)
+        );
+
+        return livro;
+    }
+
+    private void atualizarTabela() {
+
+        tblLivros.getItems().setAll(
+                livrosService.listarTodos()
+        );
+    }
+
+    private void limparCampos() {
+
+        txtTitulo.clear();
+        txtAutor.clear();
+        txtAno.clear();
     }
 }
