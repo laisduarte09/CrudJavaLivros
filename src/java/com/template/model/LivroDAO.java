@@ -33,7 +33,9 @@ public class LivroDAO {
 
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Erro ao cadastrar livro", e);
-            DialogUtil.showError("Erro ao cadastrar livro no banco de dados.");
+            DialogUtil.showError(
+                    "Erro ao cadastrar livro no banco de dados."
+            );
         }
     }
 
@@ -54,17 +56,47 @@ public class LivroDAO {
                 livro.setId(rs.getInt("id"));
                 livro.setTitulo(rs.getString("titulo"));
                 livro.setAutor(rs.getString("autor"));
-                livro.setAnoPublicacao(rs.getInt("ano_publicacao"));
+                livro.setAnoPublicacao(
+                        rs.getInt("ano_publicacao")
+                );
 
                 listaLivros.add(livro);
             }
 
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Erro ao listar livros", e);
-            DialogUtil.showError("Erro ao listar livros.");
+            DialogUtil.showError(
+                    "Erro ao listar livros."
+            );
         }
 
         return listaLivros;
+    }
+
+    public void alterarLivro(LivroDTO livro) {
+
+        String sql = """
+                UPDATE livros
+                SET titulo = ?, autor = ?, ano_publicacao = ?
+                WHERE id = ?
+                """;
+
+        try (Connection conn = Conexao.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, livro.getTitulo());
+            stmt.setString(2, livro.getAutor());
+            stmt.setInt(3, livro.getAnoPublicacao());
+            stmt.setInt(4, livro.getId());
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Erro ao alterar livro", e);
+            DialogUtil.showError(
+                    "Erro ao alterar livro."
+            );
+        }
     }
 
     public void deletarLivro(int id) {
@@ -79,7 +111,9 @@ public class LivroDAO {
 
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Erro ao deletar livro", e);
-            DialogUtil.showError("Erro ao deletar livro.");
+            DialogUtil.showError(
+                    "Erro ao deletar livro."
+            );
         }
     }
 }

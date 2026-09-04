@@ -12,6 +12,7 @@ public class LivrosValidator {
                 || isVazio(autor)
                 || isVazio(anoPublicacao)
                 || isVazio(genero)) {
+
             return false;
         }
 

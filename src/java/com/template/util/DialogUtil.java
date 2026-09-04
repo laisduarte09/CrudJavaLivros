@@ -3,6 +3,7 @@ package com.template.util;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
+
 import java.util.Optional;
 
 public class DialogUtil {
@@ -28,7 +29,10 @@ public class DialogUtil {
         alert.setTitle("Confirmação");
         alert.setHeaderText(null);
         alert.setContentText(mensagem);
-        Optional<ButtonType> result = alert.showAndWait();
-        return result.isPresent() && result.get() == ButtonType.OK;
+
+        Optional<ButtonType> resultado = alert.showAndWait();
+
+        return resultado.isPresent()
+                && resultado.get() == ButtonType.OK;
     }
 }
